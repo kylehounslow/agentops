@@ -76,6 +76,7 @@ echo -e "${BLUE}${BOLD}${ARROW}${RESET} ${BOLD}Pulling container images...${RESE
 echo ""
 sleep 0.5
 
+# Demo image list (versions are illustrative - actual versions come from .env)
 images=(
     "opensearchproject/opensearch:3.5.0"
     "opensearchproject/opensearch-dashboards:3.5.0"

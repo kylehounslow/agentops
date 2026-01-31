@@ -136,7 +136,6 @@ ARROW="→"
 STAR="★"
 
 # Configuration
-REPO_URL="https://github.com/kylehounslow/agentops.git"
 DEFAULT_INSTALL_DIR="agentops"
 
 # Print functions
