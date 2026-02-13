@@ -27,9 +27,8 @@ volumes:
 services:
   # OpenTelemetry Collector - Receives telemetry data via OTLP protocol
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:${OTEL_COLLECTOR_VERSION}
+    build: ./docker-compose/otel-collector
     container_name: otel-collector
-    pull_policy: always
     command: ["--config=/etc/otelcol-config.yml"]
     volumes:
       - ./docker-compose/otel-collector/config.yaml:/etc/otelcol-config.yml

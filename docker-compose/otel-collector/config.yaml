@@ -37,6 +37,12 @@ processors:
   resourcedetection:
     detectors: [env, system]
 
+  # GenAI attribute normalizer - maps OpenInference, OpenLLMetry, and
+  # framework-specific attributes to OTel GenAI Semantic Conventions
+  genainormalizer:
+    profiles: [openinference, openllmetry, langchain, crewai, pydanticai, strands]
+    remove_originals: false
+
   # Transform processor handles data transformations
   transform:
     error_mode: ignore
@@ -87,7 +93,7 @@ service:
     # Traces pipeline: OTLP -> processing -> Data Prepper
     traces:
       receivers: [otlp]
-      processors: [resourcedetection, memory_limiter, transform, batch]
+      processors: [resourcedetection, genainormalizer, memory_limiter, transform, batch]
       exporters: [otlp/opensearch, debug]
 
     # Metrics pipeline: OTLP -> processing -> Prometheus
