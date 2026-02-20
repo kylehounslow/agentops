@@ -203,6 +203,36 @@ services:
       retries: 12
     logging: *logging
 
+  # Agent Health - Evaluation and observability UI for AI agents
+  agent-health:
+    build:
+      context: .
+      dockerfile: docker-compose/agent-health/Dockerfile
+    container_name: agent-health
+    pull_policy: build
+    ports:
+      - "${AGENT_HEALTH_PORT}:4001"
+    environment:
+      - OPENSEARCH_STORAGE_ENDPOINT=https://${OPENSEARCH_HOST}:${OPENSEARCH_PORT}
+      - OPENSEARCH_STORAGE_USERNAME=${OPENSEARCH_USER}
+      - OPENSEARCH_STORAGE_PASSWORD=${OPENSEARCH_PASSWORD}
+      - OPENSEARCH_STORAGE_TLS_SKIP_VERIFY=true
+      - OPENSEARCH_LOGS_ENDPOINT=https://${OPENSEARCH_HOST}:${OPENSEARCH_PORT}
+      - OPENSEARCH_LOGS_USERNAME=${OPENSEARCH_USER}
+      - OPENSEARCH_LOGS_PASSWORD=${OPENSEARCH_PASSWORD}
+      - OPENSEARCH_LOGS_TLS_SKIP_VERIFY=true
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    networks:
+      - observability-stack-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: ${AGENT_HEALTH_MEMORY_LIMIT}
+    logging: *logging
+
   # OpenSearch Dashboards Initialization - Creates workspace and index patterns
   opensearch-dashboards-init:
     image: python:3.11-alpine
