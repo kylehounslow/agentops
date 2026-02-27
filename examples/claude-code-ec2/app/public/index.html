@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code — Traced</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: #1a1a2e; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 12px 20px; background: #16213e; border-bottom: 1px solid #0f3460; display: flex; align-items: center; gap: 10px; }
+  header h1 { font-size: 16px; font-weight: 600; }
+  header .badge { font-size: 11px; background: #e94560; color: white; padding: 2px 8px; border-radius: 10px; }
+  #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .msg.user { align-self: flex-end; background: #0f3460; }
+  .msg.assistant { align-self: flex-start; background: #16213e; border: 1px solid #0f3460; }
+  .msg.tool { align-self: flex-start; background: #1a1a2e; border: 1px solid #333; font-size: 12px; font-family: monospace; color: #888; }
+  .msg.result { align-self: center; background: transparent; color: #666; font-size: 12px; }
+  .msg.error { align-self: center; color: #e94560; }
+  #input-area { padding: 12px 20px; background: #16213e; border-top: 1px solid #0f3460; display: flex; gap: 10px; }
+  #prompt { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #0f3460; background: #1a1a2e; color: #e0e0e0; font-size: 14px; outline: none; }
+  #prompt:focus { border-color: #e94560; }
+  button { padding: 10px 20px; border-radius: 8px; border: none; background: #e94560; color: white; font-size: 14px; cursor: pointer; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Claude Code</h1>
+  <span class="badge">Traced → OpenSearch</span>
+</header>
+<div id="messages"></div>
+<div id="input-area">
+  <input id="prompt" placeholder="Ask Claude Code..." autofocus />
+  <button id="send" onclick="send()">Send</button>
+</div>
+<script>
+const msgs = document.getElementById('messages');
+const input = document.getElementById('prompt');
+const btn = document.getElementById('send');
+let ws;
+let currentAssistant = null;
+
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'text') {
+      if (!currentAssistant) {
+        currentAssistant = addMsg('assistant', '');
+      }
+      currentAssistant.textContent += msg.content;
+      msgs.scrollTop = msgs.scrollHeight;
+    } else if (msg.type === 'tool_use') {
+      addMsg('tool', `🔧 ${msg.tool}: ${msg.input}`);
+    } else if (msg.type === 'result') {
+      addMsg('result', `✅ ${msg.turns} turns · $${msg.cost?.toFixed(4) || '?'} · ${(msg.duration_ms/1000).toFixed(1)}s`);
+      currentAssistant = null;
+      btn.disabled = false;
+    } else if (msg.type === 'error') {
+      addMsg('error', `❌ ${msg.message}`);
+      currentAssistant = null;
+      btn.disabled = false;
+    }
+  };
+  ws.onclose = () => setTimeout(connect, 2000);
+}
+
+function addMsg(cls, text) {
+  const el = document.createElement('div');
+  el.className = `msg ${cls}`;
+  el.textContent = text;
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return el;
+}
+
+function send() {
+  const text = input.value.trim();
+  if (!text || !ws || ws.readyState !== 1) return;
+  addMsg('user', text);
+  ws.send(JSON.stringify({ type: 'prompt', prompt: text }));
+  input.value = '';
+  btn.disabled = true;
+  currentAssistant = null;
+}
+
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !btn.disabled) send(); });
+connect();
+</script>
+</body>
+</html>
