@@ -137,7 +137,7 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test: curl -s -k -u ${OPENSEARCH_USER}:${OPENSEARCH_PASSWORD} https://localhost:9200/_cluster/health | grep -E '"status":"(green|yellow)"'
+      test: curl -s -k -u ${OPENSEARCH_USER}:'${OPENSEARCH_PASSWORD}' https://localhost:9200/_cluster/health | grep -E '"status":"(green|yellow)"'
       start_period: 120s
       interval: 5s
       timeout: 10s
