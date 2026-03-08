@@ -112,7 +112,7 @@ services:
       # Set heap size (adjust based on available memory)
       - OPENSEARCH_JAVA_OPTS=${OPENSEARCH_JAVA_OPTS}
       # Initial admin password (required for OpenSearch 2.12+)
-      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_PASSWORD}
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_PASSWORD}"
       - plugins.query.datasources.encryption.masterkey=BTqK4Ytdz67La1kShIKV3Pu9
     volumes:
       # Persist data across container restarts
@@ -137,7 +137,7 @@ services:
         soft: 65536
         hard: 65536
     healthcheck:
-      test: curl -s -k -u ${OPENSEARCH_USER}:'${OPENSEARCH_PASSWORD}' https://localhost:9200/_cluster/health | grep -E '"status":"(green|yellow)"'
+      test: curl -s -k -u '${OPENSEARCH_USER}':'${OPENSEARCH_PASSWORD}' https://localhost:9200/_cluster/health | grep -E '"status":"(green|yellow)"'
       start_period: 120s
       interval: 5s
       timeout: 10s
@@ -204,7 +204,7 @@ services:
         limits:
           memory: ${DASHBOARDS_MEMORY_LIMIT}
     healthcheck:
-      test: curl -f -u ${OPENSEARCH_USER}:'${OPENSEARCH_PASSWORD}' http://localhost:5601/api/status || exit 1
+      test: curl -f -u '${OPENSEARCH_USER}':'${OPENSEARCH_PASSWORD}' http://localhost:5601/api/status || exit 1
       start_period: 60s
       interval: 10s
       timeout: 5s
