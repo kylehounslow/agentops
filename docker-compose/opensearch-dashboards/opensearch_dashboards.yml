@@ -87,3 +87,4 @@ opensearchDashboards.branding.useExpandedHeader: false
 
 uiSettings.overrides.home:useNewHomePage: true
 uiSettings.overrides.query:enhancements:enabled: true
+uiSettings.overrides.explore:experimental: true
